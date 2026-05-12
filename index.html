@@ -46,11 +46,11 @@
     background-image:radial-gradient(circle,var(--coffee) .6px,transparent .6px);
     background-size:28px 28px;
   }
-  .paper-art{
+.paper-art{
     position:fixed;inset:0;z-index:0;pointer-events:none;
     opacity:.42;mix-blend-mode:multiply;overflow:hidden;
   }
-  .paper-art svg{width:100%;height:100%;display:block}
+  .paper-art svg{width:100%;height:100%;display:block;object-fit:cover}
 
   header,main,#splash,.gps-bar,.prox,#celeb{position:relative;z-index:1}
 
@@ -1022,13 +1022,16 @@
     .live-connect{grid-template-columns:1fr 1fr}.live-connect input:first-child{grid-column:1/-1}.live-connect input:nth-child(2){grid-column:1/-1}
     .live-form{grid-template-columns:1fr 88px}.bill-add{grid-column:1/-1;min-height:46px}
     .live-summary-grid{grid-template-columns:1fr}.bill-summary{grid-template-columns:1fr}.bill-owing{grid-template-columns:1fr}
+    body::after{display:none}
+    .paper-art{opacity:.24}
+    .paper-art svg{transform:scale(1.18);transform-origin:center center}
   }
 </style>
 </head>
 <body>
 
 <div class="paper-art" aria-hidden="true">
-  <svg viewBox="0 0 1600 1200" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="paperWash" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#FBF3E8"/>
@@ -1291,7 +1294,7 @@ const D=[
 
 const KEY='coffee-hop-cholula-v6';
 const THEME_KEY='coffee-hop-theme';
-let s={a:0,d:new Set(),gps:false,uLt:null,uLn:null,wId:null,m:null,uM:null,mk:[],mr:false,mapLoading:false};
+let s={a:0,d:new Set(),gps:false,uLt:null,uLn:null,wId:null,m:null,uM:null,mk:[],mr:false,mapLoading:false,open:null};
 const LIVE_CFG_URL_KEY='coffee-hop-live-url';
 const LIVE_CFG_ANON_KEY='coffee-hop-live-anon';
 const LIVE_ROOM_KEY='coffee-hop-live-room';
@@ -1418,8 +1421,9 @@ function rS(){
   const c=document.getElementById('sl');let h='';
   D.forEach((x,i)=>{
     const on=i===s.a,dn=s.d.has(i);
+    const ex=on||s.open===i;
     const dist=distLabel(i);
-    let cl='sc';if(on)cl+=' on ex';if(dn)cl+=' dn';
+    let cl='sc';if(on)cl+=' on';if(ex)cl+=' ex';if(dn)cl+=' dn';
     h+=`<div class="${cl}" data-c="${i}" id="c${i}">
       <div class="sc-blob"></div>
       <div class="sc-h" onclick="tg(${i})">
@@ -1464,7 +1468,10 @@ function rS(){
   });c.innerHTML=h;
 }
 
-function tg(i){document.getElementById('c'+i).classList.toggle('ex')}
+function tg(i){
+  s.open=s.open===i?null:i;
+  renderAll();
+}
 function mk(e,i){
   if(e)e.stopPropagation();
   s.d.add(i);syncActive();save();renderAll();bst();
@@ -1534,7 +1541,7 @@ function focusNext(){
   if(s.mr){s.m.setView([D[s.a].lt,D[s.a].ln],17,{animate:true})}
 }
 function resetHop(){
-  s.d.clear();syncActive();save();document.getElementById('celeb').classList.remove('show');renderAll();focusNext();
+  s.d.clear();s.open=null;syncActive();save();document.getElementById('celeb').classList.remove('show');renderAll();focusNext();
 }
 
 function fmtMoney(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n||0)}
